@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bouncing DVD Logo</title>
+    <style>
+        /* Basic CSS for page styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Prevents scrollbars */
+            background-color: #111; /* Dark background for the page */
+        }
+        /* Style for the canvas container */
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        /* Canvas where the animation will be drawn */
+        canvas {
+            background-color: #000; /* Black background for the 'screen' */
+            display: block;
+            border-radius: 8px; /* Slightly rounded corners */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="canvas-container">
+        <canvas id="dvdCanvas"></canvas>
+    </div>
+
+    <script>
+        // --- Canvas and Context Setup ---
+        const canvas = document.getElementById('dvdCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Configuration ---
+        let logoWidth = 100; // Width of the logo text
+        let logoHeight = 50;  // Height of the logo text
+        // Initial speed. A value of 2 is classic.
+        let speed = 2;
+        // Array of colors for the logo to cycle through
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
+
+        // --- DVD Logo Object ---
+        // This object holds all the properties of our bouncing logo
+        let dvd = {
+            x: 50,
+            y: 50,
+            dx: speed, // Velocity in the x-direction
+            dy: speed, // Velocity in the y-direction
+            color: colors[0],
+            colorIndex: 0
+        };
+
+        /**
+         * Sets the canvas size to fill a portion of its container.
+         * This function is called on load and on window resize.
+         */
+        function resizeCanvas() {
+            // Set canvas size relative to the window size for responsiveness
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.9;
+
+            // Ensure the logo stays within the new bounds after resize
+            if (dvd.x + logoWidth > canvas.width) {
+                dvd.x = canvas.width - logoWidth;
+            }
+            if (dvd.y + logoHeight > canvas.height) {
+                dvd.y = canvas.height - logoHeight;
+            }
+        }
+
+        /**
+         * Changes the color of the DVD logo.
+         * It cycles through the 'colors' array.
+         */
+        function changeColor() {
+            dvd.colorIndex = (dvd.colorIndex + 1) % colors.length;
+            dvd.color = colors[dvd.colorIndex];
+        }
+
+        /**
+         * Draws the DVD logo on the canvas.
+         */
+        function drawDVD() {
+            ctx.fillStyle = dvd.color;
+            ctx.font = 'bold 50px sans-serif'; // Font style for the "DVD" text
+            ctx.fillText("DVD", dvd.x, dvd.y + logoHeight - 10); // Draw the text
+        }
+
+        /**
+         * Updates the position of the logo and handles collisions with the walls.
+         */
+        function update() {
+            // Move the logo
+            dvd.x += dvd.dx;
+            dvd.y += dvd.dy;
+
+            // --- Collision Detection ---
+            let collision = false;
+
+            // Check for collision with left or right walls
+            if (dvd.x + logoWidth >= canvas.width || dvd.x <= 0) {
+                dvd.dx *= -1; // Reverse horizontal direction
+                collision = true;
+                // Keep the logo within bounds
+                if (dvd.x <= 0) dvd.x = 0;
+                if (dvd.x + logoWidth >= canvas.width) dvd.x = canvas.width - logoWidth;
+            }
+
+            // Check for collision with top or bottom walls
+            if (dvd.y + logoHeight >= canvas.height || dvd.y <= 0) {
+                dvd.dy *= -1; // Reverse vertical direction
+                collision = true;
+                 // Keep the logo within bounds
+                if (dvd.y <= 0) dvd.y = 0;
+                if (dvd.y + logoHeight >= canvas.height) dvd.y = canvas.height - logoHeight;
+            }
+
+            // If there was a collision, change the color
+            if (collision) {
+                changeColor();
+            }
+        }
+
+        /**
+         * The main animation loop.
+         * Clears the canvas, updates the logo's state, and draws it again.
+         */
+        function gameLoop() {
+            // Clear the entire canvas for the next frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            update();
+            drawDVD();
+
+            // Request the next frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Listeners ---
+        // Resize the canvas when the window is resized
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- Initialization ---
+        // Set initial canvas size
+        resizeCanvas();
+        // Start the animation loop
+        gameLoop();
+    </script>
+</body>
+</html>
