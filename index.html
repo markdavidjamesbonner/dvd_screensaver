@@ -43,20 +43,24 @@
         const ctx = canvas.getContext('2d');
 
         // --- Configuration ---
-        let logoWidth = 100; // Width of the logo text
-        let logoHeight = 50;  // Height of the logo text
-        // Initial speed. A value of 2 is classic.
+        const logoFont = 'bold 150px sans-serif';
         let speed = 2;
-        // Array of colors for the logo to cycle through
         const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff'];
 
-        // --- DVD Logo Object ---
-        // This object holds all the properties of our bouncing logo
+        // Measure actual text dimensions from the canvas context
+        ctx.font = logoFont;
+        const metrics = ctx.measureText('DVD');
+        let logoWidth = metrics.width;
+        const ascent = metrics.actualBoundingBoxAscent;
+        const descent = metrics.actualBoundingBoxDescent;
+        let logoHeight = ascent + descent;
+
+        // x,y = top-left corner of the bounding box
         let dvd = {
             x: 50,
             y: 50,
-            dx: speed, // Velocity in the x-direction
-            dy: speed, // Velocity in the y-direction
+            dx: speed,
+            dy: speed,
             color: colors[0],
             colorIndex: 0
         };
@@ -93,8 +97,9 @@
          */
         function drawDVD() {
             ctx.fillStyle = dvd.color;
-            ctx.font = 'bold 50px sans-serif'; // Font style for the "DVD" text
-            ctx.fillText("DVD", dvd.x, dvd.y + logoHeight - 10); // Draw the text
+            ctx.font = logoFont;
+            // fillText y = baseline, so offset from top-left by ascent
+            ctx.fillText('DVD', dvd.x, dvd.y + ascent);
         }
 
         /**
